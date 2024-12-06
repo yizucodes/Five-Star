@@ -1,13 +1,49 @@
 # Five-Star
 DS5110 Final Project
 
-Required packages
+## Required packages
 
-`pip install pandas numpy nltk jupyter matplotlib seaborn vaderSentiment`
+`pip install pandas numpy matplotlib seaborn tqdm vaderSentiment notebook`
 
-Dataset: https://jmcauley.ucsd.edu/data/amazon/index_2014.html
+## Sentiment Analysis Environment
 
-## Dataset Column Descriptions
+This project includes an `environment.yml` file to set up a Python environment for sentiment analysis tasks.
+
+## Requirements
+- Conda (e.g., Anaconda/Miniconda)
+
+## Setup Instructions
+
+1. **Create the Environment**:
+   ```bash
+   conda env create -f environment.yml
+   ```
+
+2. **Activate the Environment**:
+   ```bash
+   conda activate sentiment_analysis_env
+   ```
+
+3. **Start Jupyter Notebook**:
+   ```bash
+   jupyter notebook
+   ```
+
+4. **Verify Dependencies**:
+   ```bash
+   python -c "import pandas, numpy, matplotlib, seaborn, tqdm, vaderSentiment; print('Setup successful!')"
+   ```
+
+## Notes
+- Run `conda env update -f environment.yml --prune` to update the environment.
+- Use `conda deactivate` to exit the environment.
+
+
+### Dataset Source
+https://jmcauley.ucsd.edu/data/amazon/index_2014.html
+
+## Cleaned Data Column Descriptions for Cleaned
+File: `data/processed/cleaned_sentiment_analysis_reviews.csv`
 
 1. **`reviewer_id`**:
    - Unique identifier for the reviewer who wrote the review.
