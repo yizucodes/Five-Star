@@ -1,0 +1,104 @@
+\documentclass[a4paper, 12pt]{article}
+% Packages
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{booktabs}
+% Page layout
+\geometry{margin=1in}
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Technical Report}
+\fancyhead[R]{Data Science Project}
+\fancyfoot[C]{\thepage}
+% Colors for code
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+% Title page
+\title{Technical Report: Final Project DS 5110: Introduction to Data Management and Processing
+}
+\author{Team Members:\\
+       Khoury College of Computer Sciences\\
+        Data Science Program\\
+        \texttt{your email@example.com}}
+\date{\today}
+% Begin document
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+% Sections
+\section{Introduction}
+\label{sec:introduction}
+Provide a brief introduction to the project, including the background, objectives, and scope.
+\section{Literature Review}
+\label{sec:literature-review}
+Summarize the existing research relevant to the project. Discuss the methodologies, findings, and gaps in the literature.
+\section{Methodology}
+\label{sec:methodology}
+Describe the methods and techniques used in the project. Include details about data collection, preprocessing, and analysis.
+\subsection{Data Collection}
+Explain how the data was collected, including the sources and tools used.
+\subsection{Data Preprocessing}
+Describe the steps taken to clean and preprocess the data.
+\subsection{Analysis Techniques}
+Detail the analytical techniques and models used in the project.
+\section{Results}
+\label{sec:results}
+Present the results of the analysis. Use tables, figures, and charts to support the findings.
+\section{Discussion}
+\label{sec:discussion}
+Interpret the results and discuss their implications. Compare the findings with the literature review and explain any discrepancies.
+\section{Conclusion}
+\label{sec:conclusion}
+Summarize the key findings of the project. Discuss the limitations and suggest areas for future research.
+\section{References}
+\label{sec:references}
+\bibliographystyle{plain}
+\bibliography{references}
+% Appendices
+\appendix
+\section{Appendix A: Code}
+\label{sec:appendix-a}
+Include any relevant code used in the project. For example:
+\begin{lstlisting}[language=Python, caption=Example Python Code]
+import pandas as pd
+# Load data
+df = pd.read_csv('data.csv')
+# Preprocess data
+df = df.dropna()
+\end{lstlisting}
+\section{Appendix B: Additional Figures}
+\label{sec:appendix-b}
+Include any additional figures or tables that support the analysis.
+\end{document}
