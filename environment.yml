@@ -1,0 +1,12 @@
+name: sentiment_analysis_env
+dependencies:
+  - python=3.9
+  - pandas
+  - numpy
+  - matplotlib
+  - seaborn
+  - tqdm
+  - pip
+  - pip:
+      - vaderSentiment
+      - notebook
