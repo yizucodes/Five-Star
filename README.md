@@ -43,7 +43,7 @@ This project includes an `environment.yml` file to set up a Python environment f
 https://jmcauley.ucsd.edu/data/amazon/index_2014.html
 
 ## Cleaned Data Column Descriptions for Cleaned
-File: `data/processed/cleaned_sentiment_analysis_reviews.csv`
+File: `data/processed/final_sentiment_analysis_data.csv`
 
 1. **`reviewer_id`**:
    - Unique identifier for the reviewer who wrote the review.
