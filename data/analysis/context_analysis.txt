@@ -1,0 +1,126 @@
+=== Analysis Results ===
+
+=== Top Word Pairs ===
+('guild', 'wars'): 15.9229
+('carpal', 'tunnel'): 15.1860
+('vo', 'io'): 15.1860
+('firepro', 'd300'): 14.9229
+('skull', 'candy'): 14.9229
+('wi', 'fi'): 14.9229
+('tripp', 'lite'): 14.7005
+('lithium', 'ion'): 14.6010
+('statements', 'reflect'): 14.5079
+('daisy', 'chain'): 14.3786
+('r9', '280x'): 14.3380
+('bells', 'whistles'): 14.0485
+('carbon', 'fiber'): 14.0225
+('ihome', 'idl48bc'): 13.9229
+('harman', 'kardon'): 13.8261
+('blu', 'ray'): 13.8074
+('fastpack', '250'): 13.7005
+('coin', 'mining'): 13.7005
+('gold', 'plated'): 13.6010
+('5400', 'rpm'): 13.5630
+
+=== Most Impactful Keywords ===
+returned: -0.1765
+great: 0.1746
+return: -0.1574
+work: -0.1305
+tried: -0.1208
+didn: -0.1191
+did: -0.1170
+broke: -0.1154
+poor: -0.1068
+support: -0.1019
+perfect: 0.0957
+love: 0.0952
+bad: -0.0945
+works: 0.0921
+told: -0.0885
+useless: -0.0845
+cheap: -0.0801
+disappointed: -0.0799
+requires: -0.0794
+doesn: -0.0791
+
+=== Feature Distribution ===
+
+Performance Keywords:
+fast: 381
+speed: 273
+performance: 194
+quick: 128
+slow: 93
+
+Quality Keywords:
+quality: 919
+solid: 191
+build: 130
+reliable: 47
+durability: 19
+
+Price Keywords:
+price: 797
+worth: 204
+cheap: 177
+expensive: 146
+cost: 144
+
+Usability Keywords:
+easy: 740
+difficult: 91
+intuitive: 29
+complicated: 15
+user-friendly: 8
+
+=== Keyword Contexts ===
+
+Contexts for 'great':
+Total mentions: 1834
+
+Left: 
+Right: 
+
+Left: 
+Right: with
+
+Left: 
+Right: 
+
+Contexts for 'excellent':
+Total mentions: 272
+
+Left: 
+Right: 
+
+Left: 
+Right: 
+
+Left: 
+Right: 
+
+Contexts for 'poor':
+Total mentions: 54
+
+Left: very
+Right: 
+Modifiers: very
+
+Left: 
+Right: 
+
+Left: 
+Right: 
+
+Contexts for 'terrible':
+Total mentions: 37
+
+Left: 
+Right: 
+
+Left: Not
+Right: 
+
+Left: 
+Right: 
