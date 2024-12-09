@@ -2,45 +2,31 @@ from flask import Flask, render_template, jsonify
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import plotly.utils  # Add this line
+import plotly.utils
 import pandas as pd
 import json
 import os
-
-import os
 from pathlib import Path
 
-# Get the absolute path of the current file
-current_file_path = os.path.abspath(__file__)
-print(f"Current file path: {current_file_path}")
-
-# Get the project root directory (Five-Star_New/Five-Star)
-project_root = Path(current_file_path).parents[2]
-print(f"Project root: {project_root}")
-
-# Set template directory to be project_root/templates
-template_dir = os.path.join(project_root, 'templates')
-print(f"Template directory: {template_dir}")
-
+# Setup template directory
+template_dir = os.path.abspath('../templates')
 app = Flask(__name__, template_folder=template_dir)
-# When initializing Flask, make sure this is correct
 
 def load_data():
-    # Replace with your data loading logic
     df = pd.read_csv('../data/processed/final_indepth_sentiment_analysis.csv')
     df['review_date'] = pd.to_datetime(df['review_date'])
     return df
 
 def create_overall_sentiment_plot(df, main_category=None):
     filtered_df = df.copy()
-    if main_category and main_category != 'all':
+    if main_category and main_category not in ['All Categories', 'all']:
         filtered_df = filtered_df[filtered_df['main_category'] == main_category]
         
     sentiment_counts = filtered_df['sentiment'].value_counts()
     fig = px.pie(
         values=sentiment_counts.values,
         names=sentiment_counts.index,
-        title=f'Overall Sentiment Distribution {f"- {main_category}" if main_category and main_category != "all" else ""}',
+        title=f'Overall Sentiment Distribution {f"- {main_category}" if main_category and main_category not in ["All Categories", "all"] else ""}',
         color_discrete_map={
             'positive': '#3498db',
             'neutral': '#9b59b6',
@@ -51,7 +37,7 @@ def create_overall_sentiment_plot(df, main_category=None):
 
 def create_rating_sentiment_plot(df, main_category=None):
     filtered_df = df.copy()
-    if main_category and main_category != 'all':
+    if main_category and main_category not in ['All Categories', 'all']:
         filtered_df = filtered_df[filtered_df['main_category'] == main_category]
         
     rating_sentiment = pd.crosstab(filtered_df['overall'], filtered_df['sentiment'], normalize='index') * 100
@@ -66,7 +52,7 @@ def create_rating_sentiment_plot(df, main_category=None):
         ))
     
     title = 'Sentiment Distribution by Rating'
-    if main_category and main_category != 'all':
+    if main_category and main_category not in ['All Categories', 'all']:
         title += f' - {main_category}'
         
     fig.update_layout(
@@ -79,7 +65,7 @@ def create_rating_sentiment_plot(df, main_category=None):
 
 def create_time_series_plot(df, main_category=None):
     filtered_df = df.copy()
-    if main_category and main_category != 'all':
+    if main_category and main_category not in ['All Categories', 'all']:
         filtered_df = filtered_df[filtered_df['main_category'] == main_category]
         
     monthly_sentiment = filtered_df.groupby([filtered_df['review_date'].dt.to_period('M'), 'sentiment']).size().unstack()
@@ -96,7 +82,7 @@ def create_time_series_plot(df, main_category=None):
             ))
     
     title = 'Sentiment Trends Over Time'
-    if main_category and main_category != 'all':
+    if main_category and main_category not in ['All Categories', 'all']:
         title += f' - {main_category}'
         
     fig.update_layout(
@@ -110,8 +96,9 @@ def create_time_series_plot(df, main_category=None):
 def dashboard():
     df = load_data()
     
-    # Get unique main categories
-    main_categories = sorted(df['main_category'].unique())
+    # Get unique main categories and add 'All Categories' option
+    categories = sorted(df['main_category'].unique())
+    categories = ['All Categories'] + [cat for cat in categories if cat != 'All Electronics']
     
     # Create initial plots
     overall_plot = create_overall_sentiment_plot(df)
@@ -123,18 +110,25 @@ def dashboard():
         overall_plot=overall_plot,
         rating_plot=rating_plot,
         time_series_plot=time_series_plot,
-        main_categories=main_categories
+        main_categories=categories
     )
 
 @app.route('/update_plots/<main_category>')
 def update_plots(main_category):
+    print(f"Received request for category: {main_category}")  # Debug print
     df = load_data()
     
-    return jsonify({
-        'overall_plot': create_overall_sentiment_plot(df, main_category),
-        'rating_plot': create_rating_sentiment_plot(df, main_category),
-        'time_series_plot': create_time_series_plot(df, main_category)
-    })
+    try:
+        result = {
+            'overall_plot': create_overall_sentiment_plot(df, main_category),
+            'rating_plot': create_rating_sentiment_plot(df, main_category),
+            'time_series_plot': create_time_series_plot(df, main_category)
+        }
+        print("Successfully created plots")  # Debug print
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error creating plots: {str(e)}")  # Debug print
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     print(f"Current directory: {os.getcwd()}")
