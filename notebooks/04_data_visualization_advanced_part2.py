@@ -7,11 +7,14 @@ import pandas as pd
 import json
 import os
 from pathlib import Path
+from functools import lru_cache
 
 # Setup template directory
 template_dir = os.path.abspath('../templates')
 app = Flask(__name__, template_folder=template_dir)
 
+# Cache the loaded data
+@lru_cache(maxsize=1)
 def load_data():
     df = pd.read_csv('../data/processed/final_indepth_sentiment_analysis.csv')
     df['review_date'] = pd.to_datetime(df['review_date'])
@@ -32,6 +35,11 @@ def create_overall_sentiment_plot(df, main_category=None):
             'neutral': '#9b59b6',
             'negative': '#1abc9c'
         }
+    )
+    # Optimize layout updates
+    fig.update_layout(
+        showlegend=True,
+        margin=dict(t=50, l=0, r=0, b=0)
     )
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
@@ -59,7 +67,8 @@ def create_rating_sentiment_plot(df, main_category=None):
         barmode='stack',
         title=title,
         xaxis_title='Rating',
-        yaxis_title='Percentage'
+        yaxis_title='Percentage',
+        margin=dict(t=50, l=50, r=0, b=50)
     )
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
@@ -68,16 +77,17 @@ def create_time_series_plot(df, main_category=None):
     if main_category and main_category not in ['All Categories', 'all']:
         filtered_df = filtered_df[filtered_df['main_category'] == main_category]
         
-    monthly_sentiment = filtered_df.groupby([filtered_df['review_date'].dt.to_period('M'), 'sentiment']).size().unstack()
+    # Optimize groupby operation
+    monthly_sentiment = filtered_df.groupby([pd.Grouper(key='review_date', freq='M'), 'sentiment']).size().unstack(fill_value=0)
     
     fig = go.Figure()
     for sentiment in ['positive', 'neutral', 'negative']:
         if sentiment in monthly_sentiment.columns:
             fig.add_trace(go.Scatter(
-                x=monthly_sentiment.index.astype(str),
+                x=monthly_sentiment.index,
                 y=monthly_sentiment[sentiment],
                 name=sentiment,
-                mode='lines+markers',
+                mode='lines',  # Removed markers for better performance
                 line=dict(color={'positive': '#3498db', 'neutral': '#9b59b6', 'negative': '#1abc9c'}[sentiment])
             ))
     
@@ -88,50 +98,32 @@ def create_time_series_plot(df, main_category=None):
     fig.update_layout(
         title=title,
         xaxis_title='Date',
-        yaxis_title='Number of Reviews'
+        yaxis_title='Number of Reviews',
+        margin=dict(t=50, l=50, r=0, b=50)
     )
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 @app.route('/')
 def dashboard():
     df = load_data()
-    
-    # Get unique main categories and add 'All Categories' option
-    categories = sorted(df['main_category'].unique())
-    categories = ['All Categories'] + [cat for cat in categories if cat != 'All Electronics']
-    
-    # Create initial plots
-    overall_plot = create_overall_sentiment_plot(df)
-    rating_plot = create_rating_sentiment_plot(df)
-    time_series_plot = create_time_series_plot(df)
+    categories = ['All Categories'] + sorted([cat for cat in df['main_category'].unique() if cat != 'All Electronics'])
     
     return render_template(
         'index.html',
-        overall_plot=overall_plot,
-        rating_plot=rating_plot,
-        time_series_plot=time_series_plot,
+        overall_plot=create_overall_sentiment_plot(df),
+        rating_plot=create_rating_sentiment_plot(df),
+        time_series_plot=create_time_series_plot(df),
         main_categories=categories
     )
 
 @app.route('/update_plots/<main_category>')
 def update_plots(main_category):
-    print(f"Received request for category: {main_category}")  # Debug print
     df = load_data()
-    
-    try:
-        result = {
-            'overall_plot': create_overall_sentiment_plot(df, main_category),
-            'rating_plot': create_rating_sentiment_plot(df, main_category),
-            'time_series_plot': create_time_series_plot(df, main_category)
-        }
-        print("Successfully created plots")  # Debug print
-        return jsonify(result)
-    except Exception as e:
-        print(f"Error creating plots: {str(e)}")  # Debug print
-        return jsonify({'error': str(e)}), 500
+    return jsonify({
+        'overall_plot': create_overall_sentiment_plot(df, main_category),
+        'rating_plot': create_rating_sentiment_plot(df, main_category),
+        'time_series_plot': create_time_series_plot(df, main_category)
+    })
 
 if __name__ == '__main__':
-    print(f"Current directory: {os.getcwd()}")
-    print(f"Template directory: {template_dir}")
-    print(f"Template exists: {os.path.exists(os.path.join(template_dir, 'index.html'))}")
     app.run(debug=True)

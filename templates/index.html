@@ -21,6 +21,7 @@
         margin: 20px 0;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
       }
       .filter-container {
         margin-bottom: 20px;
@@ -44,6 +45,24 @@
         color: #2c3e50;
         margin-bottom: 30px;
       }
+      .loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        display: none;
+      }
+      .loading::after {
+        content: "Loading...";
+        font-size: 18px;
+        color: #2c3e50;
+      }
     </style>
   </head>
   <body>
@@ -60,35 +79,75 @@
 
       <div class="grid">
         <div class="plot-container">
+          <div class="loading"></div>
           <div id="overall_sentiment"></div>
         </div>
         <div class="plot-container">
+          <div class="loading"></div>
           <div id="rating_sentiment"></div>
         </div>
         <div class="plot-container full-width">
+          <div class="loading"></div>
           <div id="time_series"></div>
         </div>
       </div>
     </div>
 
     <script>
-      // Initial plots
-      Plotly.newPlot('overall_sentiment', {{ overall_plot | safe }});
-      Plotly.newPlot('rating_sentiment', {{ rating_plot | safe }});
-      Plotly.newPlot('time_series', {{ time_series_plot | safe }});
+      let updatePromise = null;
+
+      // Initial plots with optimized config
+      const config = {
+          responsive: true,
+          displayModeBar: false
+      };
+
+      Plotly.newPlot('overall_sentiment', {{ overall_plot | safe }}, config);
+      Plotly.newPlot('rating_sentiment', {{ rating_plot | safe }}, config);
+      Plotly.newPlot('time_series', {{ time_series_plot | safe }}, config);
+
+      function showLoading() {
+          document.querySelectorAll('.loading').forEach(el => el.style.display = 'flex');
+      }
+
+      function hideLoading() {
+          document.querySelectorAll('.loading').forEach(el => el.style.display = 'none');
+      }
 
       function updatePlots(mainCategory) {
-          // Encode the category name for the URL
+          // Cancel previous update if it's still pending
+          if (updatePromise) {
+              updatePromise.abort();
+          }
+
+          showLoading();
           const encodedCategory = encodeURIComponent(mainCategory);
 
-          fetch(`/update_plots/${encodedCategory}`)
+          // Use AbortController for fetch
+          const controller = new AbortController();
+          updatePromise = fetch(`/update_plots/${encodedCategory}`, {
+              signal: controller.signal
+          })
               .then(response => response.json())
               .then(data => {
-                  Plotly.newPlot('overall_sentiment', JSON.parse(data.overall_plot));
-                  Plotly.newPlot('rating_sentiment', JSON.parse(data.rating_plot));
-                  Plotly.newPlot('time_series', JSON.parse(data.time_series_plot));
+                  Plotly.react('overall_sentiment', JSON.parse(data.overall_plot), config);
+                  Plotly.react('rating_sentiment', JSON.parse(data.rating_plot), config);
+                  Plotly.react('time_series', JSON.parse(data.time_series_plot), config);
               })
-              .catch(error => console.error('Error:', error));
+              .catch(error => {
+                  if (error.name === 'AbortError') {
+                      console.log('Update cancelled');
+                  } else {
+                      console.error('Error:', error);
+                  }
+              })
+              .finally(() => {
+                  hideLoading();
+                  updatePromise = null;
+              });
+
+          // Store abort controller
+          updatePromise.abort = () => controller.abort();
       }
     </script>
   </body>
