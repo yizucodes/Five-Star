@@ -98,6 +98,12 @@
         <div class="plot-container full-width">
           <div id="brand_sentiment"></div>
         </div>
+        <div class="plot-container full-width">
+          <div id="top_positive_products"></div>
+        </div>
+        <div class="plot-container full-width">
+          <div id="top_negative_products"></div>
+        </div>
       </div>
     </div>
 
@@ -112,6 +118,9 @@
       Plotly.newPlot('category_sentiment', {{ overall_sentiment | safe }});
       Plotly.newPlot('rating_sentiment', {{ rating_sentiment | safe }});
       Plotly.newPlot('brand_sentiment', {{ brand_sentiment | safe }});
+      Plotly.newPlot('top_positive_products', {{ top_positive_products | safe }});
+      Plotly.newPlot('top_negative_products', {{ top_negative_products | safe }});
+
 
       function updatePlots(mainCategory) {
           fetch(`/update_plots/${encodeURIComponent(mainCategory)}`)
@@ -120,6 +129,8 @@
                   if (data.overall_plot) Plotly.newPlot('category_sentiment', JSON.parse(data.overall_plot));
                   if (data.rating_plot) Plotly.newPlot('rating_sentiment', JSON.parse(data.rating_plot));
                   if (data.brand_plot) Plotly.newPlot('brand_sentiment', JSON.parse(data.brand_plot));
+                  if (data.top_positive_plot) Plotly.newPlot('top_positive_products', JSON.parse(data.top_positive_plot));
+                    if (data.top_negative_plot) Plotly.newPlot('top_negative_products', JSON.parse(data.top_negative_plot));
               })
               .catch(error => console.error('Error:', error));
       }
