@@ -286,20 +286,55 @@ def create_brand_sentiment_analysis_plot(df, main_category=None):
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 
+import pandas as pd
+import pandas as pd
+import plotly.graph_objects as go
+import json
+import plotly.utils
+
+def process_title(title):
+    """Process title to make it more readable and concise"""
+    if not isinstance(title, str):
+        return "Unknown Title"
+    
+    # Remove common suffixes and prefixes
+    removals = [
+        " - Amazon.com",
+        ", Amazon Exclusive",
+        " (Discontinued by Manufacturer)",
+        " (Old Version)",
+        " (Latest Model)",
+        " (Latest Version)",
+        " (NOT for",
+        " with Auto Backup",
+        " for The ",
+        " (Frustration-Free Packaging)"
+    ]
+    for removal in removals:
+        title = title.replace(removal, "")
+    
+    # Keep only first part of product name before extensive specifications
+    if " - " in title:
+        title = title.split(" - ")[0]
+    
+    # Truncate if still too long
+    if len(title) > 40:
+        title = title[:37] + "..."
+        
+    return title
+
 def create_top_products_plot(df, overall_category=None, sentiment_type='positive'):
     """Create visualization of top 5 products by positive reviews and ratio"""
     filtered_df = df.copy()
     if overall_category and overall_category not in ['All Categories', 'all']:
         filtered_df = filtered_df[filtered_df['overall_category'] == overall_category]
     
-    # Filter out products without titles or with 'untitled'
     filtered_df = filtered_df[
         (filtered_df['title'].notna()) & 
         (filtered_df['title'] != '') & 
         (~filtered_df['title'].str.lower().str.contains('untitled', na=False))
     ]
     
-    # Filter for products with at least 5 reviews total
     product_counts = filtered_df['asin'].value_counts()
     valid_products = product_counts[product_counts >= 5].index
     
@@ -316,49 +351,12 @@ def create_top_products_plot(df, overall_category=None, sentiment_type='positive
         fig.update_layout(height=400)
         return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     
-    def process_title(title):
-        """Process title to make it more readable and concise"""
-        if not isinstance(title, str):
-            return "Unknown Title"
-        
-        # Remove common suffixes and prefixes
-        removals = [
-            " - Amazon.com",
-            ", Amazon Exclusive",
-            " (Discontinued by Manufacturer)",
-            " (Old Version)",
-            " (Latest Model)",
-            " (Latest Version)"
-        ]
-        for removal in removals:
-            title = title.replace(removal, "")
-        
-        # Split title into words
-        words = title.split()
-        
-        # If title is too long, keep important parts
-        if len(words) > 8:
-            # Keep first 6 words + "..."
-            shortened = " ".join(words[:6])
-            # Add ellipsis if we truncated
-            if len(words) > 6:
-                shortened += "..."
-        else:
-            shortened = title
-            
-        # Ensure final length is reasonable
-        if len(shortened) > 60:
-            shortened = shortened[:57] + "..."
-            
-        return shortened
-    
     product_sentiment = []
     for asin in valid_products:
         product_data = filtered_df[filtered_df['asin'] == asin]
         sentiment_counts = product_data['sentiment'].value_counts()
         total = len(product_data)
         
-        # Get and process title
         original_title = product_data['title'].iloc[0]
         processed_title = process_title(original_title)
         
@@ -366,32 +364,37 @@ def create_top_products_plot(df, overall_category=None, sentiment_type='positive
         neutral_count = sentiment_counts.get('neutral', 0)
         negative_count = sentiment_counts.get('negative', 0)
         
-        # Calculate ratio of positive to non-positive reviews
+        # Calculate percentages
+        positive_pct = (positive_count / total) * 100
+        neutral_pct = (neutral_count / total) * 100
+        negative_pct = (negative_count / total) * 100
+        
+        # Format ratio as counts
         if sentiment_type == 'positive':
             non_positive = neutral_count + negative_count
-            ratio = positive_count / (non_positive + 1)  # Add 1 to avoid division by zero
-            sentiment_score = positive_count * ratio  # Combine count and ratio
+            ratio = f"{positive_count}:{non_positive}"
+            score_ratio = positive_count / (non_positive if non_positive > 0 else 1)
+            sentiment_score = positive_count * score_ratio
         else:
             non_negative = neutral_count + positive_count
-            ratio = negative_count / (non_negative + 1)
-            sentiment_score = negative_count * ratio
+            ratio = f"{negative_count}:{non_negative}"
+            score_ratio = negative_count / (non_negative if non_negative > 0 else 1)
+            sentiment_score = negative_count * score_ratio
         
         product_sentiment.append({
             'asin': asin,
             'title': processed_title,
             'original_title': original_title,
-            'positive': positive_count,
-            'neutral': neutral_count,
-            'negative': negative_count,
-            'total': total,
-            'sentiment_score': sentiment_score,
+            'positive_count': positive_count,
+            'neutral_count': neutral_count,
+            'negative_count': negative_count,
+            'positive_pct': positive_pct,
+            'neutral_pct': neutral_pct,
+            'negative_pct': negative_pct,
             'ratio': ratio,
-            'positive_pct': (positive_count/total)*100,
-            'neutral_pct': (neutral_count/total)*100,
-            'negative_pct': (negative_count/total)*100
+            'sentiment_score': sentiment_score
         })
     
-    # Convert to DataFrame and get top 5 by sentiment score
     product_df = pd.DataFrame(product_sentiment)
     if product_df.empty:
         fig = go.Figure()
@@ -408,25 +411,48 @@ def create_top_products_plot(df, overall_category=None, sentiment_type='positive
         
     top_products = product_df.nlargest(5, 'sentiment_score')
     
+    # Create y-axis labels with title, ASIN, and ratio
+    y_labels = [
+        f"{row.title}<br>ASIN: {row.asin}<br>Ratio: {row.ratio}"
+        for row in top_products.itertuples()
+    ]
+    
     fig = go.Figure()
     
+    hover_templates = {
+        'positive': "count: %{x}<br>percentage: %{customdata[0]:.1f}%",
+        'neutral': "count: %{x}<br>percentage: %{customdata[0]:.1f}%",
+        'negative': "count: %{x}<br>percentage: %{customdata[0]:.1f}%"
+    }
+    
     for sentiment in ['positive', 'neutral', 'negative']:
+        count_col = f'{sentiment}_count'
+        pct_col = f'{sentiment}_pct'
+        
         fig.add_trace(go.Bar(
             name=sentiment,
-            x=top_products[sentiment],
-            y=top_products['title'],
+            x=top_products[count_col],
+            y=y_labels,  # Use formatted y-labels instead of positions
             orientation='h',
             marker_color={'positive': '#3498db', 'neutral': '#9b59b6', 'negative': '#1abc9c'}[sentiment],
-            customdata=top_products[['original_title', 'asin', f'{sentiment}_pct', sentiment, 'total', 'ratio']].values,
-            hovertemplate="<b>%{customdata[0]}</b><br>" +
-                         "ASIN: %{customdata[1]}<br><br>" +
-                         "Positive: %{customdata[3]} (%{customdata[2]:.1f}%)<br>" +
-                         "Total reviews: %{customdata[4]}<br>" +
-                         "Sentiment ratio: %{customdata[5]:.2f}<br>" +
-                         "<extra></extra>"
+            customdata=top_products[[pct_col]].values,
+            hovertemplate=hover_templates[sentiment] + "<extra></extra>"
         ))
     
-    title_prefix = 'Highest Impact'
+    # Add ratio explanation note
+    note_text = "Note: Ratio refers to positive:(neutral + negative)" if sentiment_type == 'positive' else "Note: Ratio refers to negative:(positive + neutral)"
+    fig.add_annotation(
+        text=note_text,
+        xref='paper',
+        yref='paper',
+        x=0.5,
+        y=-0.15,
+        showarrow=False,
+        font=dict(size=10, color='gray'),
+        align='center'
+    )
+    
+    title_prefix = 'Top 5'
     title = f'{title_prefix} {sentiment_type.capitalize()} Products'
     if overall_category and overall_category not in ['All Categories', 'all']:
         title += f' - {overall_category}'
@@ -434,16 +460,25 @@ def create_top_products_plot(df, overall_category=None, sentiment_type='positive
     fig.update_layout(
         barmode='stack',
         title=title + '<br><sup>Based on both review count and sentiment ratio</sup>',
-        xaxis_title='Number of Reviews',
-        yaxis_title='Product',
-        height=400,
+        xaxis=dict(
+            title='Number of Reviews',
+            range=[0, None],
+            zeroline=True,
+        ),
+        yaxis=dict(
+            title='Products',
+            tickmode='array',
+            ticktext=y_labels,
+            tickvals=list(range(len(y_labels)))
+        ),
+        height=500,
+        width=1000,
         hovermode='y unified',
-        # Adjust margins to accommodate longer titles
-        margin=dict(l=200, r=20, t=60, b=40)
+        margin=dict(l=300, r=20, t=80, b=80),
+        legend_title_text='Sentiment Categories',
+        showlegend=True
     )
-    
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
 
 @app.route('/')
 def dashboard():
@@ -465,7 +500,7 @@ def dashboard():
     top_negative_products = create_top_products_plot(df, sentiment_type='negative')
     
     return render_template(
-        'index_2.html',
+        'index_3.html',
         overall_sentiment=overall_sentiment,
         rating_distribution=rating_sentiment_dist,
         category_distribution=category_distribution,
