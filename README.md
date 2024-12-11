@@ -73,6 +73,9 @@ Five-Star/
 
 ## Data Overview
 
+**Raw data source:** https://jmcauley.ucsd.edu/data/amazon/index_2014.html
+**Processed reviews:** [final_sentiment_analysis_data.csv](https://github.com/yizucodes/Five-Star/blob/main/data/processed/final_sentiment_analysis_data.csv)
+
 ### Core Review Data
 
 | Column Name | Description                         |
