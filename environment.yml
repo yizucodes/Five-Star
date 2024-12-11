@@ -8,9 +8,12 @@ dependencies:
   - tqdm
   - wordcloud
   - flask
+  - scikit-learn
+  - spacy
   - pip
   - pip:
       - vaderSentiment
       - notebook
       - plotly
       - nbformat
+      - textblob
