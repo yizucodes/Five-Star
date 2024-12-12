@@ -2,8 +2,6 @@
 
 A comprehensive sentiment analysis project analyzing Amazon Electronics product reviews using VADER and TextBlob sentiment analysis techniques, featuring an interactive visualization dashboard.
 
----
-
 ## Project Overview
 
 This project conducts sentiment analysis on Amazon product reviews in the Electronics category. Using Natural Language Processing (NLP) techniques, VADER and TextBlob sentiment analyzers, we analyze customer sentiment patterns and derive insights from user feedback through an interactive dashboard.
@@ -23,8 +21,6 @@ This project conducts sentiment analysis on Amazon product reviews in the Electr
 - **Product-Level Analysis**:
   - High-review-count products show balanced sentiment distribution.
   - Price and technical specifications are key drivers of sentiment.
-
----
 
 ## Key Findings
 
@@ -52,8 +48,6 @@ This project conducts sentiment analysis on Amazon product reviews in the Electr
 - Brand sentiment varies significantly by product category.
 - Customer service and product reliability are key factors in brand sentiment.
 
----
-
 ## Project Structure
 
 ```
@@ -69,8 +63,6 @@ Five-Star/
 ├── Final_SA_Amazon_Presentation.pptx  # Final presentation
 └── README.md              # Project documentation
 ```
-
----
 
 ## Data Overview
 
@@ -106,8 +98,6 @@ Five-Star/
 | review_length  | Character count                                  |
 | word_count     | Number of words                                  |
 | sentiment      | Calculated sentiment (positive/neutral/negative) |
-
----
 
 ## Prerequisites and Installation
 
@@ -174,8 +164,6 @@ python -m spacy download en_core_web_sm
 python -c "import pandas, numpy, matplotlib, seaborn, tqdm, wordcloud, flask, vaderSentiment, notebook, plotly, nbformat, textblob, spacy; print('Setup successful')"
 ```
 
----
-
 ## Analysis and Dashboard
 
 ### Usage Instructions
@@ -220,8 +208,6 @@ python3 04_data_visualization_advanced_part4.py
 
 ![Interactive Dashboard](/data/visuals/dashboard.png)
 
----
-
 ## Key Features of Analysis
 
 - Sentiment classification using VADER and TextBlob.
@@ -230,20 +216,14 @@ python3 04_data_visualization_advanced_part4.py
 - Temporal sentiment analysis.
 - Review helpfulness correlation.
 
----
-
 ## Team Members
 
 - [Nishtha Sawhney](https://github.com/sawhneyn)
 - [Yi Zu](https://github.com/yizucodes/)
 
----
-
 ## License
 
 This project is part of the DS5110 course at Northeastern University.
-
----
 
 ## References
 
