@@ -65,6 +65,7 @@ Five-Star/
 ├── templates/              # HTML templates
 ├── .gitignore             # Git ignore file
 ├── environment.yml        # Conda environment configuration
+├── Final_Report.pdf       # Final report
 ├── Final_SA_Amazon_Presentation.pptx  # Final presentation
 └── README.md              # Project documentation
 ```
